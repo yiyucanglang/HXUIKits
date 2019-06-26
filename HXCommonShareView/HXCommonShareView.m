@@ -56,10 +56,15 @@
         make.left.right.equalTo(self);
         self.bottomContainerViewHeightConstraint =  make.height.equalTo(@(self.bottomContainerViewHeight));
         make.top.equalTo(self.mas_bottom).priorityMedium();
-        self.bottomBottomConstraint = make.bottom.equalTo(self).with.offset(0);
+        if (@available(iOS 11.0, *)) {
+            self.bottomBottomConstraint = make.bottom.equalTo(self.mas_safeAreaLayoutGuideBottom).with.offset(0);
+        }
+        else {
+            self.bottomBottomConstraint = make.bottom.equalTo(self).with.offset(0);
+        }
+        
         [self.bottomBottomConstraint deactivate];
     }];
-    
     
     
     
@@ -133,7 +138,12 @@
     
     [targetView addSubview:self];
     [self mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.edges.equalTo(targetView);
+        make.top.left.right.equalTo(targetView);
+        if (@available(iOS 11.0, *)) {
+            make.bottom.equalTo(targetView.mas_safeAreaLayoutGuideBottom);
+        } else {
+            make.bottom.equalTo(targetView);
+        }
     }];
     
     
