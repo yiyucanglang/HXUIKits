@@ -21,6 +21,7 @@ Pod::Spec.new do |s|
   s.subspec 'HXTimerButton' do |ss|
     ss.public_header_files = 'HXTimerButton/*{h}'
     ss.source_files = 'HXTimerButton/*.{h,m}'
+    ss.dependency 'Masonry'
   end
 
   s.subspec 'HXWebView' do |ss|
