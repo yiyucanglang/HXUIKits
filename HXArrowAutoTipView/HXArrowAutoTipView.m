@@ -47,8 +47,8 @@
 - (void)layoutSubviews {
     [super layoutSubviews];
     
-    CGFloat width  = self.mainContainerView.size.width;
-    CGFloat height = self.mainContainerView.size.height;
+    CGFloat width  = self.mainContainerView.frame.size.width;
+    CGFloat height = self.mainContainerView.frame.size.height;
     
     [self _calculateArrowLeftMargin];
     CGFloat margin = self.triangleLeftMargin;
@@ -326,24 +326,24 @@
 #pragma mark -
 - (void)_calculateArrowLeftMargin {
     
-    CGFloat width  = self.anchorView.size.width;
-    CGFloat height = self.anchorView.size.height;
+    CGFloat width  = self.anchorView.frame.size.width;
+    CGFloat height = self.anchorView.frame.size.height;
     
     if (self.arrowDirection == HXArrowDirectionDown || self.arrowDirection == HXArrowDirectionUp) {
         if (self.alignStyle == HXArrowTipAlignStyleCenter) {
             
-            self.triangleLeftMargin = width/2.0 - self.triangleEdgeWidth/2.0 + (self.mainContainerView.width - width)/2;
+            self.triangleLeftMargin = width/2.0 - self.triangleEdgeWidth/2.0 + (self.mainContainerView.frame.size.width - width)/2;
         }
         else if(self.alignStyle == HXArrowTipAlignStyleLeft) {
             self.triangleLeftMargin = width/2.0 - self.triangleEdgeWidth/2.0 + self.edgeMargin;
         }
         else {
-            self.triangleLeftMargin = self.mainContainerView.width - width/2.0 - self.triangleEdgeWidth/2.0 - self.edgeMargin;
+            self.triangleLeftMargin = self.mainContainerView.frame.size.width - width/2.0 - self.triangleEdgeWidth/2.0 - self.edgeMargin;
         }
         
     }
     else {
-        self.triangleLeftMargin = height/2.0 - self.triangleEdgeWidth/2.0 + (self.mainContainerView.height - height)/2;
+        self.triangleLeftMargin = height/2.0 - self.triangleEdgeWidth/2.0 + (self.mainContainerView.frame.size.height - height)/2;
     }
 }
 
