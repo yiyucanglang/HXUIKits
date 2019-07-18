@@ -7,7 +7,6 @@
 //
 
 #import "HXArrowAutoTipView.h"
-#import <KVOController/KVOController.h>
 @interface HXArrowAutoTipView()
 <
     CAAnimationDelegate
