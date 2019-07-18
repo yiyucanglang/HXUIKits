@@ -18,7 +18,7 @@ typedef NS_OPTIONS(NSInteger, HXCommonShareViewPlatform) {
     HXCommonShareViewPlatform_All = HXCommonShareViewPlatform_WeChat|HXCommonShareViewPlatform_WeChatTimeLine|HXCommonShareViewPlatform_QQ|HXCommonShareViewPlatform_Sina,
 };
 
-typedef void(^HXShareCompletionHandler)(HXCommonShareViewPlatform platForm);
+typedef void(^HXShareCompletionHandler)(HXCommonShareViewPlatform platForm, id _Nullable bindingData);
 
 @interface HXCommonShareView : UIView
 
@@ -40,11 +40,15 @@ typedef void(^HXShareCompletionHandler)(HXCommonShareViewPlatform platForm);
 
 - (void)dismiss;
 
+- (void)configDefaultItemViewWithImage:(UIImage *)image
+                                 title:(NSString * _Nullable)title
+                       imgTextDistance:(CGFloat)distance
+                              platform:(HXCommonShareViewPlatform)platform;
+
 //must called before showInView if this method invoked
 - (void)customLayout:(void(^)(UIView *bottomContainerView))layoutBlock;
 
-- (void)bindingActionInView:(UIView *)targetView
-                   platform:(HXCommonShareViewPlatform)platform;
+- (void)customItemView:(UIView *)itemView associatedWithPlatform:(HXCommonShareViewPlatform)platform;
 @end
 
 NS_ASSUME_NONNULL_END

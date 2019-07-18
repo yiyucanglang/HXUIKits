@@ -108,9 +108,6 @@
 @property (nonatomic, strong) NSMutableDictionary  *registMethodRelationDic;
 @property (nonatomic, copy) NSString  *originalURLStr;
 
-
-@property (nonatomic, strong) NSTimer  *whiteScreenTimer;
-
 @end
 
 @implementation HXWebView
@@ -131,14 +128,10 @@
     [super removeFromSuperview];
     [self.KVOControllerNonRetaining unobserveAll];
     [self unregistAllMethodInvokedByWeb];
-    [self stopWhiteScreenGuard];
 }
 
 #pragma mark - Public Method
-static HXWebView *testWeb;
 - (void)loadURLStr:(NSString *)URLStr {
-    testWeb = self;
-    [self startWhiteScreenGuard];
     if (!URLStr) {
         return;
     }
@@ -177,16 +170,6 @@ static HXWebView *testWeb;
     }];
 }
 
-- (void)startWhiteScreenGuard {
-    [self stopWhiteScreenGuard];
-    self.whiteScreenTimer = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(_whiteScreenCheck) userInfo:nil repeats:YES];
-    [[NSRunLoop currentRunLoop] addTimer:self.whiteScreenTimer forMode:NSRunLoopCommonModes];
-}
-
-- (void)stopWhiteScreenGuard {
-    [self.whiteScreenTimer invalidate];
-    self.whiteScreenTimer == nil;
-}
 
 #pragma mark - Override
 
@@ -202,12 +185,12 @@ static HXWebView *testWeb;
 }
 
 - (void)_whiteScreenCheck {
-    if(self.loadSuccessFlag && !self.title.length) {//whitescreen happen
+//    if(self.loadSuccessFlag && !self.title.length) {//whitescreen happen
 ////        [self _hxReload];
 //        if ([self respondsToSelector:@selector(_updateVisibleContentRects)]) {
 //            ((void(*)(id,SEL,BOOL))objc_msgSend)(self, @selector(_updateVisibleContentRects),NO);
 //        }
-    }
+//    }
 }
 
 #pragma mark Tool
@@ -283,17 +266,6 @@ static HXWebView *testWeb;
     if (self.LoadFinishHandler) {
         self.LoadFinishHandler(YES);
     }
-    
-    
-    if(self.whiteScreenTimer) {
-        [webView evaluateJavaScript:@"window.document.title = 'customTitle'" completionHandler:^(id _Nullable response, NSError * _Nullable error) {
-            
-            NSString *resurlt = [NSString stringWithFormat:@"%@",response];
-            NSLog(@"这是获取到的标题%@", resurlt);
-            
-        }];
-    }
-    
 }
 
 - (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(null_unspecified WKNavigation *)navigation withError:(NSError *)error {

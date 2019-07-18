@@ -21,10 +21,10 @@
 @property (nonatomic, strong) UIView *maskView;
 
 @property (nonatomic, strong) UIView  *platformContainerView;
-@property (nonatomic, strong) UIView  *weChatBtn;
-@property (nonatomic, strong) UIView  *weChatTimeLineBtn;
-@property (nonatomic, strong) UIView  *qqBtn;
-@property (nonatomic, strong) UIView  *sinaBtn;
+@property (nonatomic, strong) HXImgTextCombineView  *weChatBtn;
+@property (nonatomic, strong) HXImgTextCombineView  *weChatTimeLineBtn;
+@property (nonatomic, strong) HXImgTextCombineView  *qqBtn;
+@property (nonatomic, strong) HXImgTextCombineView  *sinaBtn;
 
 @property (nonatomic, strong) id  bindingData;
 @property (nonatomic, copy) HXShareCompletionHandler  handler;
@@ -157,6 +157,35 @@
     }];
 }
 
+- (void)configDefaultItemViewWithImage:(UIImage *)image title:(NSString *)title imgTextDistance:(CGFloat)distance platform:(HXCommonShareViewPlatform)platform {
+    HXImgTextCombineView *combineView = nil;
+    switch (platform) {
+        case HXCommonShareViewPlatform_WeChat:
+            combineView = self.weChatBtn;
+            break;
+        case HXCommonShareViewPlatform_WeChatTimeLine:
+            combineView = self.weChatTimeLineBtn;
+            break;
+        case HXCommonShareViewPlatform_QQ:
+            combineView = self.qqBtn;
+            break;
+        case HXCommonShareViewPlatform_Sina:
+            combineView = self.sinaBtn;
+            break;
+            
+        default:
+            break;
+    }
+    if (image) {
+        combineView.imageView.image = image;
+    }
+    
+    combineView.titleLB.text = title?:@"";
+    
+    combineView.distance = distance;
+    [combineView reloadUI];
+}
+
 - (void)dismiss {
     self.handler = nil;
     [UIView animateWithDuration:0.35 animations:^{
@@ -175,10 +204,10 @@
     layoutBlock(self.bottomContainerView);
 }
 
-- (void)bindingActionInView:(UIView *)targetView platform:(HXCommonShareViewPlatform)platform {
+- (void)customItemView:(UIView *)itemView associatedWithPlatform:(HXCommonShareViewPlatform)platform {
     
-    for (UIGestureRecognizer *ges in [targetView.gestureRecognizers copy]) {
-        [targetView removeGestureRecognizer:ges];
+    for (UIGestureRecognizer *ges in [itemView.gestureRecognizers copy]) {
+        [itemView removeGestureRecognizer:ges];
     }
     
     SEL sel;
@@ -196,8 +225,8 @@
     }
     
     UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:sel];
-    targetView.userInteractionEnabled = YES;
-    [targetView addGestureRecognizer:tap];
+    itemView.userInteractionEnabled = YES;
+    [itemView addGestureRecognizer:tap];
 }
 
 #pragma mark - Override
@@ -205,33 +234,33 @@
 #pragma mark - Private Method
 - (void)weChat {
     if (self.handler) {
-        self.handler(HXCommonShareViewPlatform_WeChat);
+        self.handler(HXCommonShareViewPlatform_WeChat, self.bindingData);
     }
-    
+    self.handler = nil;
     [self dismiss];
 }
 
 - (void)weChatTimeLine {
     if (self.handler) {
-        self.handler(HXCommonShareViewPlatform_WeChatTimeLine);
+        self.handler(HXCommonShareViewPlatform_WeChatTimeLine, self.bindingData);
     }
-    
+    self.handler = nil;
     [self dismiss];
 }
 
 - (void)qq {
     if (self.handler) {
-        self.handler(HXCommonShareViewPlatform_QQ);
+        self.handler(HXCommonShareViewPlatform_QQ, self.bindingData);
     }
-    
+    self.handler = nil;
     [self dismiss];
 }
 
 - (void)sina {
     if (self.handler) {
-        self.handler(HXCommonShareViewPlatform_Sina);
+        self.handler(HXCommonShareViewPlatform_Sina, self.bindingData);
     }
-    
+    self.handler = nil;
     [self dismiss];
 }
 
@@ -264,7 +293,7 @@
 }
 
 
-- (UIView *)weChatBtn {
+- (HXImgTextCombineView *)weChatBtn {
     if (!_weChatBtn) {
         HXImgTextCombineView *_weChatImgText = [[HXImgTextCombineView alloc] init];
         _weChatImgText.imageView.image = [self imageInSpecificBundleWithName:@"wechat"];
@@ -281,7 +310,7 @@
     return _weChatBtn;
 }
 
-- (UIView *)weChatTimeLineBtn {
+- (HXImgTextCombineView *)weChatTimeLineBtn {
     if (!_weChatTimeLineBtn) {
         HXImgTextCombineView *_weChatTimeLineImgText = [[HXImgTextCombineView alloc] init];
         _weChatTimeLineImgText.imageView.image = [self imageInSpecificBundleWithName:@"timeline"];
@@ -298,7 +327,7 @@
     return _weChatTimeLineBtn;
 }
 
-- (UIView *)qqBtn {
+- (HXImgTextCombineView *)qqBtn {
     if (!_qqBtn) {
         HXImgTextCombineView *_qqImgText = [[HXImgTextCombineView alloc] init];
         _qqImgText.imageView.image = [self imageInSpecificBundleWithName:@"qq"];
@@ -315,7 +344,7 @@
     return _qqBtn;
 }
 
-- (UIView *)sinaBtn {
+- (HXImgTextCombineView *)sinaBtn {
     if (!_sinaBtn) {
         HXImgTextCombineView *_sinaImgText = [[HXImgTextCombineView alloc] init];
         

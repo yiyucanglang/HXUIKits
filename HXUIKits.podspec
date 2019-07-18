@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'HXUIKits'
-  s.version          = '0.0.1'
+  s.version          = '0.0.2'
   s.summary          = 'Common UI controls'
 
   s.homepage         = 'https://github.com/yiyucanglang'
@@ -37,6 +37,12 @@ Pod::Spec.new do |s|
     ss.resource = "HXCommonShareView/HXShareResources.bundle"
     ss.dependency 'Masonry'
     ss.dependency 'HXKitComponent/HXImgtextCombineView'
+  end
+
+  s.subspec 'HXArrowAutoTipView' do |ss|
+    ss.public_header_files = 'HXArrowAutoTipView/*{h}'
+    ss.source_files = 'HXArrowAutoTipView/*.{h,m}'
+    ss.dependency 'Masonry'
   end
 
 

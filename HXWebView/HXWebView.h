@@ -50,9 +50,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)invokeWebMethod:(NSString *)jsString completionHandler:(void(^)(id _Nullable result, NSError * _Nullable error))completionHandler;
 
-- (void)startWhiteScreenGuard;
-
-- (void)stopWhiteScreenGuard;
 @end
 
 NS_ASSUME_NONNULL_END
