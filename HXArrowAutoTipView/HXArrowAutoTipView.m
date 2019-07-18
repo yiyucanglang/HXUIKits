@@ -6,7 +6,10 @@
 //  Copyright © 2019 DaHuanXiong. All rights reserved.
 //
 
+
 #import "HXArrowAutoTipView.h"
+
+
 @interface HXArrowAutoTipView()
 <
     CAAnimationDelegate
@@ -17,7 +20,7 @@
 @property (nonatomic, strong) CAShapeLayer    *arrowShapeLayer;
 @property (nonatomic, strong) UIBezierPath    *arrowPath;
 @property (nonatomic, assign) CGFloat   triangleLeftMargin;
-@property (nonatomic, weak) UIView    *anchorView;
+@property (nonatomic, weak)   UIView    *anchorView;
 @property (nonatomic, strong) UIView  *maskView;
 @property (nonatomic, strong) UIView  *anchorCopyView;
 @property (nonatomic, weak)   UIView   *superView;
