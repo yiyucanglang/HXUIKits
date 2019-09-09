@@ -133,13 +133,16 @@
     [self removeAllObserver];
 }
 
+- (nullable WKNavigation *)loadRequest:(NSURLRequest *)request {
+    [self _notiObserverLoadBegin];
+    return [super loadRequest:request];
+}
+
 #pragma mark - Public Method
 - (void)loadURLStr:(NSString *)URLStr {
     if (!URLStr) {
         return;
     }
-    
-    [self _notiObserverLoadBegin];
     
     self.originalURLStr = URLStr;
     NSMutableURLRequest *mutableRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:URLStr]];
@@ -394,6 +397,21 @@
     }
     return _wkNavigationInterceptor;
 }
+
+- (NSMutableDictionary *)observerBeginDic {
+    if (!_observerBeginDic) {
+        _observerBeginDic = [[NSMutableDictionary alloc] init];
+    }
+    return _observerBeginDic;
+}
+
+- (NSMutableDictionary *)observerEndDic {
+    if (!_observerEndDic) {
+        _observerEndDic = [[NSMutableDictionary alloc] init];
+    }
+    return _observerEndDic;
+}
+
 
 #pragma mark - Dealloc
 @end
