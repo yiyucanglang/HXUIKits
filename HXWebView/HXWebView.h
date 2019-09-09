@@ -10,6 +10,10 @@
 
 typedef void(^WebInvokeNativeHandler)(WKScriptMessage * _Nonnull message);
 
+typedef void(^LoadBeginHandler)(void);
+
+typedef void(^LoadEndHandler)(BOOL success, NSError *error);
+
 NS_ASSUME_NONNULL_BEGIN
 
 //@warning: whem remove from superView all services supplied by self  will be done even you readd it to a view
@@ -18,6 +22,12 @@ NS_ASSUME_NONNULL_BEGIN
     WKUIDelegate,
     WKNavigationDelegate
 >
+
+
+/**
+ default : NSURLRequestUseProtocolCachePolicy
+ */
+@property (nonatomic, assign) NSURLRequestCachePolicy   cachePolicy;
 
 /**
  default: nil
@@ -34,9 +44,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign, readonly) BOOL   loadSuccessFlag;
 
-//warning reference circular
-@property (nonatomic, copy) void (^LoadFinishHandler)(BOOL success);
-
 
 - (void)loadURLStr:(NSString *)URLStr;
 
@@ -50,6 +57,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)invokeWebMethod:(NSString *)jsString completionHandler:(void(^)(id _Nullable result, NSError * _Nullable error))completionHandler;
 
+//warning :circular reference
+- (void)addObserver:(id)observer
+   loadBeginHandler:(LoadBeginHandler _Nullable)loadBeginHandler
+  loadEndHandler:(LoadEndHandler _Nullable)loadEndHandler;
+
+- (void)removeObserver:(id)observer;
+
+- (void)removeAllObserver;
 @end
 
 NS_ASSUME_NONNULL_END

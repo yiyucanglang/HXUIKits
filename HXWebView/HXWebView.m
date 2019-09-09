@@ -12,7 +12,6 @@
 #import <objc/runtime.h>
 #import <objc/message.h>
 
-
 @interface HXJSInteractMiddler : NSObject<WKScriptMessageHandler>
 
 @property (nonatomic, weak) id scriptDelegate;
@@ -108,6 +107,9 @@
 @property (nonatomic, strong) NSMutableDictionary  *registMethodRelationDic;
 @property (nonatomic, copy) NSString  *originalURLStr;
 
+@property (nonatomic, strong) NSMutableDictionary  *observerBeginDic;
+@property (nonatomic, strong) NSMutableDictionary  *observerEndDic;
+
 @end
 
 @implementation HXWebView
@@ -128,6 +130,7 @@
     [super removeFromSuperview];
     [self.KVOControllerNonRetaining unobserveAll];
     [self unregistAllMethodInvokedByWeb];
+    [self removeAllObserver];
 }
 
 #pragma mark - Public Method
@@ -135,9 +138,12 @@
     if (!URLStr) {
         return;
     }
+    
+    [self _notiObserverLoadBegin];
+    
     self.originalURLStr = URLStr;
     NSMutableURLRequest *mutableRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:URLStr]];
-    mutableRequest.cachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
+    mutableRequest.cachePolicy = self.cachePolicy;
     [self loadRequest:mutableRequest];
     [self showProgressView];
 }
@@ -170,6 +176,26 @@
     }];
 }
 
+- (void)addObserver:(id)observer loadBeginHandler:(LoadBeginHandler)loadBeginHandler loadEndHandler:(LoadEndHandler)loadEndHandler {
+    if (!observer) {
+        return;
+    }
+    
+    NSString *key = [NSString stringWithFormat:@"%p", observer];
+    self.observerBeginDic[key] = loadBeginHandler;
+    self.observerEndDic[key]   = loadEndHandler;
+}
+
+- (void)removeObserver:(id)observer {
+    NSString *key = [NSString stringWithFormat:@"%p", observer];
+    [self.observerBeginDic removeObjectForKey:key];
+    [self.observerEndDic  removeObjectForKey:key];
+}
+
+- (void)removeAllObserver {
+    self.observerBeginDic = nil;
+    self.observerEndDic = nil;
+}
 
 #pragma mark - Override
 
@@ -191,6 +217,25 @@
 //            ((void(*)(id,SEL,BOOL))objc_msgSend)(self, @selector(_updateVisibleContentRects),NO);
 //        }
 //    }
+}
+
+- (void)_notiObserverLoadBegin {
+    for (NSString *key in self.observerBeginDic.allKeys) {
+        LoadBeginHandler handler = self.observerBeginDic[key];
+        if (handler) {
+            handler();
+        }
+    }
+}
+
+- (void)_notiObserverLoadEnd:(NSError *)error {
+    BOOL success = error ? NO : YES;
+    for (NSString *key in self.observerEndDic.allKeys) {
+        LoadEndHandler handler = self.observerEndDic[key];
+        if (handler) {
+            handler(success, error);
+        }
+    }
 }
 
 #pragma mark Tool
@@ -263,9 +308,7 @@
     [self hiddenProgressView];
     [self.failView removeFromSuperview];
     [self.hudView removeFromSuperview];
-    if (self.LoadFinishHandler) {
-        self.LoadFinishHandler(YES);
-    }
+    [self _notiObserverLoadEnd:nil];
 }
 
 - (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(null_unspecified WKNavigation *)navigation withError:(NSError *)error {
@@ -273,9 +316,7 @@
     [self.hudView removeFromSuperview];
     [self hiddenProgressView];
     [self addView:self.failView targetView:self];
-    if (self.LoadFinishHandler) {
-        self.LoadFinishHandler(NO);
-    }
+    [self _notiObserverLoadEnd:error];
 }
 
 - (void)webViewWebContentProcessDidTerminate:(WKWebView *)webView {

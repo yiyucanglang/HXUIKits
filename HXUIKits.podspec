@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'HXUIKits'
-  s.version          = '0.0.3'
+  s.version          = '0.0.4'
   s.summary          = 'Common UI controls'
 
   s.homepage         = 'https://github.com/yiyucanglang'
