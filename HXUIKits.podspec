@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'HXUIKits'
-  s.version          = '0.0.5'
+  s.version          = '0.0.6'
   s.summary          = 'Common UI controls'
 
   s.homepage         = 'https://github.com/yiyucanglang'
@@ -10,6 +10,7 @@ Pod::Spec.new do |s|
   s.static_framework = true
 
   s.ios.deployment_target = '8.0'
+
   s.default_subspecs = 'HXRespondAreaExpandButton', 'HXTimerButton', 'HXWebView', 'HXArrowAutoTipView'
 
   s.subspec 'HXRespondAreaExpandButton' do |ss|
@@ -42,6 +43,12 @@ Pod::Spec.new do |s|
     ss.public_header_files = 'HXArrowAutoTipView/*{h}'
     ss.source_files = 'HXArrowAutoTipView/*.{h,m}'
     ss.dependency 'Masonry'
+  end
+  
+  s.subspec 'HXSegmentView' do |ss|
+    ss.public_header_files = 'HXSegmentView/*{h}'
+    ss.source_files = 'HXSegmentView/*.{h,m}'
+    ss.dependency 'HXConvenientListView/Core'
   end
 
 
