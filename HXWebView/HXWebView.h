@@ -8,11 +8,19 @@
 
 #import <WebKit/WebKit.h>
 
+
+typedef NS_ENUM(NSInteger, HXWebLoadStatus) {
+    HXWebLoadStatus_UnKnown,
+    HXWebLoadStatus_Loading,
+    HXWebLoadStatus_Fail,
+    HXWebLoadStatus_Success,
+};
+
 typedef void(^WebInvokeNativeHandler)(WKScriptMessage * _Nonnull message);
 
-typedef void(^LoadBeginHandler)(void);
+typedef void(^LoadBeginHandler)(NSURL *URL);
 
-typedef void(^LoadEndHandler)(BOOL success, NSError *error);
+typedef void(^LoadEndHandler)(NSURL *URL, BOOL success, NSError *error);
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -39,11 +47,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, strong, nullable) UIView  *failView;
 
-
 @property (nonatomic, strong, nullable) UIProgressView  *progressView;
 
-@property (nonatomic, assign, readonly) BOOL   loadSuccessFlag;
+@property (nonatomic, assign) BOOL   foribbdenAutoReloadWhenClickFailView;
 
+@property (nonatomic, assign, readonly) HXWebLoadStatus   loadStatus;
 
 - (void)loadURLStr:(NSString *)URLStr;
 
@@ -65,6 +73,18 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)removeObserver:(id)observer;
 
 - (void)removeAllObserver;
+
+
+
+
+
+- (void)loadWillStart:(WKWebView *)webView didStartProvisionalNavigation:(WKNavigation *)navigation;
+
+- (void)loadFail:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation withError:(NSError *)error;
+
+- (void)loadSuccess:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation;
+
+
 @end
 
 NS_ASSUME_NONNULL_END

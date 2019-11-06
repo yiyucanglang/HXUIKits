@@ -110,6 +110,9 @@
 @property (nonatomic, strong) NSMutableDictionary  *observerBeginDic;
 @property (nonatomic, strong) NSMutableDictionary  *observerEndDic;
 
+@property (nonatomic, copy) NSString  *currentLoadingUrlStr;
+
+@property (nonatomic, assign) HXWebLoadStatus   loadStatus;
 @end
 
 @implementation HXWebView
@@ -134,7 +137,11 @@
 }
 
 - (nullable WKNavigation *)loadRequest:(NSURLRequest *)request {
-    [self _notiObserverLoadBegin];
+    
+    if (!self.UIDelegate && !self.navigationDelegate) {//set self as the default delegate of self
+        self.UIDelegate         = self;
+        self.navigationDelegate = self;
+    }
     return [super loadRequest:request];
 }
 
@@ -200,17 +207,44 @@
     self.observerEndDic = nil;
 }
 
+- (void)loadWillStart:(WKWebView *)webView didStartProvisionalNavigation:(WKNavigation *)navigation {
+    
+    self.currentLoadingUrlStr  = webView.URL.absoluteString;
+    
+    [self _notiObserverLoadBeginWithLoadURL:webView.URL];
+    
+    self.loadStatus = HXWebLoadStatus_Loading;
+    [self addView:self.hudView targetView:self];
+    [self showProgressView];
+}
+
+- (void)loadFail:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation withError:(NSError *)error {
+    
+    self.loadStatus = HXWebLoadStatus_Fail;
+    
+    [self.hudView removeFromSuperview];
+    [self hiddenProgressView];
+    [self addView:self.failView targetView:self];
+    [self _notiObserverLoadEnd:error URL:webView.URL];
+}
+
+- (void)loadSuccess:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation {
+    
+    self.loadStatus = HXWebLoadStatus_Success;
+    
+    [self hiddenProgressView];
+    [self.failView removeFromSuperview];
+    [self.hudView removeFromSuperview];
+    [self _notiObserverLoadEnd:nil URL:webView.URL];
+}
+
 #pragma mark - Override
 
 
 #pragma mark - Private Method
 
 - (void)_hxReload {
-    if (self.URL.absoluteString.length) {
-        [self reload];
-        return;
-    }
-    [self loadURLStr:self.originalURLStr];
+    [self loadURLStr:self.currentLoadingUrlStr ?: self.originalURLStr];
 }
 
 - (void)_whiteScreenCheck {
@@ -222,21 +256,21 @@
 //    }
 }
 
-- (void)_notiObserverLoadBegin {
+- (void)_notiObserverLoadBeginWithLoadURL:(NSURL *)URL {
     for (NSString *key in self.observerBeginDic.allKeys) {
         LoadBeginHandler handler = self.observerBeginDic[key];
         if (handler) {
-            handler();
+            handler(URL);
         }
     }
 }
 
-- (void)_notiObserverLoadEnd:(NSError *)error {
+- (void)_notiObserverLoadEnd:(NSError *)error URL:(NSURL *)URL {
     BOOL success = error ? NO : YES;
     for (NSString *key in self.observerEndDic.allKeys) {
         LoadEndHandler handler = self.observerEndDic[key];
         if (handler) {
-            handler(success, error);
+            handler(URL, success, error);
         }
     }
 }
@@ -301,25 +335,21 @@
 }
 
 - (void)webView:(WKWebView *)webView didStartProvisionalNavigation:(WKNavigation *)navigation {
-    _loadSuccessFlag = NO;
-    [self addView:self.hudView targetView:self];
-    [self showProgressView];
+    
+    [self loadWillStart:webView didStartProvisionalNavigation:navigation];
 }
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation {
-    _loadSuccessFlag = YES;
-    [self hiddenProgressView];
-    [self.failView removeFromSuperview];
-    [self.hudView removeFromSuperview];
-    [self _notiObserverLoadEnd:nil];
+   
+    [self loadSuccess:webView didFinishNavigation:navigation];
+    
 }
 
 - (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(null_unspecified WKNavigation *)navigation withError:(NSError *)error {
-    _loadSuccessFlag = NO;
-    [self.hudView removeFromSuperview];
-    [self hiddenProgressView];
-    [self addView:self.failView targetView:self];
-    [self _notiObserverLoadEnd:error];
+    
+    [self loadFail:webView didFailProvisionalNavigation:navigation withError:error];
+    
+    
 }
 
 - (void)webViewWebContentProcessDidTerminate:(WKWebView *)webView {
@@ -354,8 +384,14 @@
 - (void)setFailView:(UIView *)failView {
     [_failView removeFromSuperview];
     _failView = failView;
-    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_hxReload)];
-    [failView addGestureRecognizer:tap];
+    if (!self.foribbdenAutoReloadWhenClickFailView) {
+        UIButton *click = [UIButton new];
+        [click addTarget:self action:@selector(_hxReload) forControlEvents:UIControlEventTouchUpInside];
+        [failView addSubview:click];
+        [click mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.edges.equalTo(failView);
+        }];
+    }
 }
 
 - (void)setProgressView:(UIProgressView *)progressView {
@@ -363,6 +399,7 @@
     [progressView removeFromSuperview];
     _progressView = progressView;
     [self addSubview:progressView];
+    progressView.hidden = YES;
     [progressView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.left.top.right.equalTo(self);
         make.height.equalTo(@(2));
